@@ -1,0 +1,49 @@
+# Entornos virtuales
+venv/
+.venv/
+env/
+
+# Variables de entorno y credenciales — JAMÁS se commitean
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*.json
+service-account*.json
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Índice vectorial generado (se reconstruye con `python scripts/ingest.py`)
+data/index/*
+!data/index/.gitkeep
+
+# Documentos de referencia: solo se commitean los de ejemplo. Los PDFs reales
+# pueden traer datos personales (pasaportes, cartas consulares, CPF, etc.).
+data/documents/*
+!data/documents/README.md
+!data/documents/ejemplo_*.md
+
+# Logs (pueden contener mensajes de usuarios / números de WhatsApp)
+*.log
+logs/
+
+# Sistema operativo / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Builds
+build/
+dist/

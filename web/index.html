@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Asistente DETRAN & Consular</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="chat">
+      <header class="chat__header">
+        <div>
+          <h1>Asistente DETRAN &amp; Consular</h1>
+          <p>Panel de pruebas · responde solo con los documentos indexados</p>
+        </div>
+        <span class="badge" id="status">● en línea</span>
+      </header>
+
+      <section class="chat__log" id="log" aria-live="polite">
+        <article class="msg msg--bot">
+          <p>¡Hola! Pregúntame sobre licencias de conducir, trámites de DETRAN o cartas consulares.</p>
+        </article>
+      </section>
+
+      <div class="chips" id="chips">
+        <button type="button">¿Cómo canjeo mi licencia extranjera?</button>
+        <button type="button">¿Para qué sirve una carta consular?</button>
+      </div>
+
+      <form class="chat__form" id="form">
+        <input id="input" type="text" maxlength="1000" autocomplete="off" placeholder="Escribe tu pregunta…" required />
+        <button type="submit" id="send">Enviar</button>
+      </form>
+
+      <footer class="chat__footer">
+        Orientación informativa. Confirma siempre con el DETRAN o el consulado oficial.
+      </footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
