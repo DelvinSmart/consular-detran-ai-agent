@@ -93,7 +93,7 @@ Todos los canales reciben el mismo objeto:
 Requisitos: Python 3.10+ y una API key de OpenAI **o** de Gemini.
 
 ```bash
-git clone https://github.com/<tu-usuario>/consular-detran-ai-agent.git
+git clone https://github.com/DelvinSmart/consular-detran-ai-agent.git
 cd consular-detran-ai-agent
 
 python3 -m venv .venv
