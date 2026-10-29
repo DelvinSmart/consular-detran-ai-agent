@@ -5,6 +5,7 @@
 ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991?logo=openai&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Google-Gemini-4285F4?logo=googlegemini&logoColor=white)
 ![WhatsApp](https://img.shields.io/badge/WhatsApp-Cloud%20API-25D366?logo=whatsapp&logoColor=white)
+![Telegram](https://img.shields.io/badge/Telegram-Bot%20API-26A5E4?logo=telegram&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 Agente de IA con arquitectura **RAG** (Retrieval-Augmented Generation) que
@@ -12,9 +13,17 @@ orienta a personas migrantes sobre **trámites de DETRAN, licencias de
 conducir y cartas consulares**, respondiendo **solo** con lo que dicen los
 documentos de referencia que se le entregan.
 
-Está construido como un **agente headless**: el núcleo de inteligencia no
-sabe nada de HTTP, HTML ni WhatsApp. Cada canal es un adaptador delgado que
-traduce mensajes hacia y desde el mismo cerebro.
+Está construido como un **agente headless y tri-canal**: un solo cerebro de
+IA atiende a la vez el **Panel Web**, **WhatsApp Cloud API** y un **Bot de
+Telegram**. El núcleo de inteligencia no sabe nada de HTTP, HTML, WhatsApp ni
+Telegram; cada canal es un adaptador delgado que traduce mensajes hacia y
+desde el mismo cerebro.
+
+| Canal | Adaptador | Entrada | Estado por defecto |
+| --- | --- | --- | --- |
+| 🖥️ Panel Web | [`channels/web.py`](channels/web.py) | `POST /api/chat` | Activo |
+| 💬 WhatsApp Cloud API | [`channels/whatsapp.py`](channels/whatsapp.py) | `/webhooks/whatsapp` | Desactivado hasta configurar Meta |
+| ✈️ Telegram Bot | [`channels/telegram.py`](channels/telegram.py) | `/webhooks/telegram` o polling | Desactivado hasta crear el bot |
 
 ## El problema
 
@@ -43,19 +52,20 @@ Este proyecto prioriza que **el agente diga "no lo sé" antes que inventar**.
                     │            Answer + fuentes              │
                     └───────────────┬──────────────────────────┘
                                     │  RAGAgent.ask(texto) -> Answer
-              ┌─────────────────────┼──────────────────────┐
-              ▼                     ▼                      ▼
-     channels/web.py       channels/whatsapp.py      scripts/ask.py
-     POST /api/chat        /webhooks/whatsapp         (terminal)
-              │                     │
-       web/ (panel chat)    Meta WhatsApp Cloud API
+       ┌────────────────────┬──────┴─────────────┬────────────────────┐
+       ▼                    ▼                    ▼                    ▼
+ channels/web.py   channels/whatsapp.py  channels/telegram.py   scripts/ask.py
+ POST /api/chat    /webhooks/whatsapp    /webhooks/telegram       (terminal)
+       │                    │             o polling local
+       ▼                    ▼                    ▼
+ web/ (panel chat)  Meta WhatsApp Cloud API  Telegram Bot API
 ```
 
 | Capa | Carpeta | Responsabilidad |
 | --- | --- | --- |
 | Núcleo | [`agent_core/`](agent_core/) | Ingesta, embeddings, índice, recuperación y generación. Sin dependencias de canal. |
 | Proveedores | [`agent_core/providers/`](agent_core/providers/) | OpenAI y Gemini detrás de una misma interfaz (`embed` + `generate`). Agregar otro = una clase. |
-| Canales | [`channels/`](channels/) | Adaptadores: API web y webhook de WhatsApp. Solo traducen formatos. |
+| Canales | [`channels/`](channels/) | Adaptadores: API web, webhook de WhatsApp y bot de Telegram. Solo traducen formatos. |
 | Interfaz | [`web/`](web/) | Panel de chat estático para pruebas visuales. |
 | Servidor | [`server.py`](server.py) | Ensambla los canales en una app FastAPI. Sin lógica de IA. |
 
@@ -164,6 +174,37 @@ responden 404).
 El mismo `RAGAgent` que responde en el panel web responde en WhatsApp: no
 hay que duplicar documentos, prompts ni lógica.
 
+## Conectar el bot de Telegram (opcional)
+
+El adaptador [`channels/telegram.py`](channels/telegram.py) habla con la
+Bot API directamente por HTTP (sin SDK extra), responde citando el mensaje
+original, añade las fuentes al final y atiende `/start` y `/help`.
+
+1. Habla con [@BotFather](https://t.me/BotFather), envía `/newbot` y copia
+   el token en `TELEGRAM_BOT_TOKEN`.
+
+**Modo polling (desarrollo local, sin HTTPS ni ngrok):**
+
+```bash
+python scripts/telegram_polling.py
+```
+
+**Modo webhook (producción):**
+
+2. Inventa un `TELEGRAM_WEBHOOK_SECRET` (letras, números, `_` y `-`) y pon
+   `TELEGRAM_ENABLED=true` en `.env`.
+3. Con el servidor expuesto por HTTPS, registra el webhook una sola vez:
+
+   ```bash
+   curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
+     -d url=https://<tu-dominio>/webhooks/telegram \
+     -d secret_token=$TELEGRAM_WEBHOOK_SECRET
+   ```
+
+Telegram no permite polling y webhook al mismo tiempo: el script de polling
+elimina el webhook al arrancar, así que vuelve a registrarlo al pasar a
+producción.
+
 ## Seguridad
 
 - Ningún secreto vive en el código: todo sale de `.env`, que está en
@@ -171,7 +212,10 @@ hay que duplicar documentos, prompts ni lógica.
 - Los documentos reales y el índice generado **no se commitean**: pueden
   contener datos personales o material con derechos de autor.
 - El panel web pinta las respuestas con `textContent`, nunca como HTML.
-- El webhook rechaza peticiones sin firma HMAC válida de Meta.
+- El webhook de WhatsApp rechaza peticiones sin firma HMAC válida de Meta, y
+  el de Telegram las que no traen el `secret_token` correcto.
+- El token del bot de Telegram va en la URL de la Bot API, por eso nunca se
+  escribe en los logs.
 
 ## Estructura
 
@@ -187,9 +231,10 @@ consular-detran-ai-agent/
 │   └── providers/         # OpenAI / Gemini intercambiables
 ├── channels/              # Adaptadores de canal
 │   ├── web.py             # POST /api/chat
-│   └── whatsapp.py        # Webhook WhatsApp Cloud API (desactivado)
+│   ├── whatsapp.py        # Webhook WhatsApp Cloud API (desactivado)
+│   └── telegram.py        # Bot de Telegram: webhook + polling (desactivado)
 ├── web/                   # Panel de chat de pruebas
-├── scripts/               # ingest.py, ask.py
+├── scripts/               # ingest.py, ask.py, telegram_polling.py
 ├── data/documents/        # Documentos de referencia
 ├── tests/                 # Tests sin API key
 └── server.py              # App FastAPI
@@ -198,7 +243,7 @@ consular-detran-ai-agent/
 ## Próximos pasos
 
 - Base vectorial persistente (pgvector / Qdrant) para corpus grandes.
-- Memoria de conversación por usuario (historial corto por número de WhatsApp).
+- Memoria de conversación por usuario (historial corto por número de WhatsApp o chat de Telegram).
 - Metadatos por estado (DETRAN-AM, DETRAN-SP...) para filtrar la recuperación.
 - Evaluación automática de respuestas con un set de preguntas de referencia.
 

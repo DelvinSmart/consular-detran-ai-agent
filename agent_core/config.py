@@ -50,6 +50,10 @@ class Settings:
     whatsapp_app_secret: str
     whatsapp_api_version: str
 
+    telegram_enabled: bool
+    telegram_bot_token: str
+    telegram_webhook_secret: str
+
     @classmethod
     def from_env(cls) -> "Settings":
         return cls(
@@ -72,4 +76,7 @@ class Settings:
             whatsapp_phone_number_id=os.getenv("WHATSAPP_PHONE_NUMBER_ID", ""),
             whatsapp_app_secret=os.getenv("WHATSAPP_APP_SECRET", ""),
             whatsapp_api_version=os.getenv("WHATSAPP_API_VERSION", "v21.0"),
+            telegram_enabled=_bool("TELEGRAM_ENABLED"),
+            telegram_bot_token=os.getenv("TELEGRAM_BOT_TOKEN", ""),
+            telegram_webhook_secret=os.getenv("TELEGRAM_WEBHOOK_SECRET", ""),
         )

@@ -10,16 +10,17 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from channels import web, whatsapp
+from channels import telegram, web, whatsapp
 
 app = FastAPI(
     title="Consular & DETRAN AI Agent",
-    description="Agente RAG headless: un cerebro, múltiples canales.",
+    description="Agente RAG headless tri-canal: Panel Web, WhatsApp y Telegram.",
     version="0.1.0",
 )
 
 app.include_router(web.router)
 app.include_router(whatsapp.router)
+app.include_router(telegram.router)
 
 
 @app.get("/health", tags=["infra"])

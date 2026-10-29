@@ -1,7 +1,7 @@
 [project]
 name = "consular-detran-ai-agent"
 version = "0.1.0"
-description = "Agente de IA headless con RAG para trámites de DETRAN, licencias de conducir y cartas consulares para migrantes — un solo núcleo, múltiples canales (panel web y WhatsApp)."
+description = "Agente de IA headless con RAG para trámites de DETRAN, licencias de conducir y cartas consulares para migrantes — un solo núcleo, tres canales (panel web, WhatsApp y Telegram)."
 requires-python = ">=3.10"
 readme = "README.md"
 license = { text = "MIT" }
