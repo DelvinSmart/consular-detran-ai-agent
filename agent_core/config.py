@@ -62,7 +62,7 @@ class Settings:
             openai_chat_model=os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini"),
             openai_embedding_model=os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
             gemini_api_key=os.getenv("GEMINI_API_KEY", ""),
-            gemini_chat_model=os.getenv("GEMINI_CHAT_MODEL", "gemini-2.5-flash"),
+            gemini_chat_model=os.getenv("GEMINI_CHAT_MODEL", "gemini-3.8-flash"),
             gemini_embedding_model=os.getenv("GEMINI_EMBEDDING_MODEL", "gemini-embedding-001"),
             documents_dir=_path("DOCUMENTS_DIR", "data/documents"),
             index_path=_path("INDEX_PATH", "data/index/index.json"),
