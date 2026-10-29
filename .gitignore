@@ -32,7 +32,6 @@ data/index/*
 # pueden traer datos personales (pasaportes, cartas consulares, CPF, etc.).
 data/documents/*
 !data/documents/README.md
-!data/documents/ejemplo_*.md
 
 # Logs (pueden contener mensajes de usuarios / números de WhatsApp)
 *.log

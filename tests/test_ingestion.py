@@ -27,3 +27,21 @@ def test_chunk_directory_skips_readme(tmp_path):
     (tmp_path / "foto.jpg").write_bytes(b"\xff")
     chunks = chunk_directory(tmp_path, chunk_size=500, overlap=50)
     assert {c.source for c in chunks} == {"guia.md"}
+
+
+def test_markdown_chunks_carry_their_heading_path(tmp_path):
+    (tmp_path / "base.md").write_text(
+        "# Título del documento\n\n## 5. Embajada\n\n### Datos Bancarios\n\n- Banco: X\n- PIX: 123\n",
+        encoding="utf-8",
+    )
+    [chunk] = chunk_directory(tmp_path, chunk_size=500, overlap=50)
+    assert chunk.text.startswith("5. Embajada > Datos Bancarios\n")
+    assert "Título del documento" not in chunk.text
+
+
+def test_long_list_is_split_by_line_not_mid_word():
+    items = "\n".join(f"- Requisito número {i} con descripción" for i in range(30))
+    chunks = split_text(items, chunk_size=200, overlap=40)
+    for chunk in chunks:
+        for line in chunk.split("\n"):
+            assert not line or line.startswith("- Requisito")

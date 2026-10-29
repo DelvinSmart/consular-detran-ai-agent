@@ -115,15 +115,23 @@ cp .env.example .env             # y completa OPENAI_API_KEY o GEMINI_API_KEY
 
 ### 1. Cargar documentos e indexar
 
-Pon tus PDFs/TXT/MD oficiales en [`data/documents/`](data/documents/). El
-repo trae `ejemplo_guia_demo.md`, un documento **ficticio** solo para probar
-el flujo.
+Pon tus PDFs/TXT/MD oficiales en [`data/documents/`](data/documents/).
+Esa carpeta está en `.gitignore`: la base de conocimiento real (precios,
+datos bancarios, contactos) vive solo en tu máquina o servidor.
+
+¿Solo quieres ver el flujo? Copia la guía **ficticia** de
+[`data/samples/`](data/samples/):
 
 ```bash
+cp data/samples/ejemplo_guia_demo.md data/documents/
 python scripts/ingest.py
 # Indexando data/documents con openai/text-embedding-3-small...
 # Listo: 2 fragmentos guardados en data/index/index.json
 ```
+
+Los `.md` se fragmentan por encabezados: cada fragmento lleva la ruta de su
+sección (p. ej. `5. Verificación ante la Embajada > Datos Bancarios`), así un
+bloque con solo números de cuenta sigue diciendo a qué se refiere.
 
 Vuelve a ejecutarlo cada vez que agregues o cambies documentos, o cambies de
 proveedor.
@@ -235,7 +243,8 @@ consular-detran-ai-agent/
 │   └── telegram.py        # Bot de Telegram: webhook + polling (desactivado)
 ├── web/                   # Panel de chat de pruebas
 ├── scripts/               # ingest.py, ask.py, telegram_polling.py
-├── data/documents/        # Documentos de referencia
+├── data/documents/        # Base de conocimiento real (ignorada por git)
+├── data/samples/          # Guía ficticia para probar el flujo
 ├── tests/                 # Tests sin API key
 └── server.py              # App FastAPI
 ```
