@@ -108,7 +108,7 @@ cd consular-detran-ai-agent
 
 python3 -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+pip install -r requirements-dev.txt   # producción + pytest
 
 cp .env.example .env             # y completa OPENAI_API_KEY o GEMINI_API_KEY
 ```
@@ -159,6 +159,34 @@ Los tests usan un proveedor falso: no necesitan API key ni internet.
 
 ```bash
 pytest
+```
+
+## Despliegue en la nube
+
+El repo incluye un [`Dockerfile`](Dockerfile) compatible con Render, Railway,
+Fly.io o Google Cloud Run. El servidor escucha en `0.0.0.0:$PORT` y respeta
+los headers del proxy HTTPS de la plataforma.
+
+| Archivo | Uso |
+| --- | --- |
+| [`requirements.txt`](requirements.txt) | Solo dependencias de producción, con versiones probadas. |
+| [`requirements-dev.txt`](requirements-dev.txt) | Producción + pytest, para desarrollo local. |
+| [`.dockerignore`](.dockerignore) | Impide que `.env`, `.venv` o el índice local entren en la imagen. |
+
+1. **Variables de entorno:** cárgalas en el panel de la plataforma (las
+   mismas de `.env.example`). Nunca subas el `.env`.
+2. **Índice:** con `AUTO_INGEST=true` (por defecto), si al arrancar no
+   existe el índice, el servidor lo construye desde `data/documents/`. Así
+   funciona aunque el disco del contenedor se borre en cada deploy.
+3. **Base de conocimiento:** como `data/documents/` no está en git, hay que
+   hacerla llegar al servidor: construyendo la imagen localmente (el
+   `Dockerfile` sí la copia) o montando un volumen/secret file en esa ruta.
+4. **Verificación:** `GET /health` devuelve el proveedor, si el índice está
+   listo y qué canales están activos.
+
+```bash
+docker build -t consular-detran-agent .
+docker run --env-file .env -p 8000:8000 consular-detran-agent
 ```
 
 ## Conectar WhatsApp Business (opcional)
@@ -246,6 +274,7 @@ consular-detran-ai-agent/
 ├── data/documents/        # Base de conocimiento real (ignorada por git)
 ├── data/samples/          # Guía ficticia para probar el flujo
 ├── tests/                 # Tests sin API key
+├── Dockerfile             # Imagen de producción ($PORT, usuario sin root)
 └── server.py              # App FastAPI
 ```
 

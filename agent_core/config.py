@@ -42,6 +42,7 @@ class Settings:
     chunk_overlap: int
     top_k: int
     min_similarity: float
+    auto_ingest: bool
 
     whatsapp_enabled: bool
     whatsapp_verify_token: str
@@ -70,6 +71,7 @@ class Settings:
             chunk_overlap=int(os.getenv("CHUNK_OVERLAP", "150")),
             top_k=int(os.getenv("TOP_K", "4")),
             min_similarity=float(os.getenv("MIN_SIMILARITY", "0.35")),
+            auto_ingest=_bool("AUTO_INGEST", True),
             whatsapp_enabled=_bool("WHATSAPP_ENABLED"),
             whatsapp_verify_token=os.getenv("WHATSAPP_VERIFY_TOKEN", ""),
             whatsapp_access_token=os.getenv("WHATSAPP_ACCESS_TOKEN", ""),

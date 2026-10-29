@@ -1,0 +1,25 @@
+# Secretos: nunca dentro de la imagen
+.env
+.env.*
+!.env.example
+
+# Entorno local y artefactos
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.git/
+.gitignore
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# El índice se regenera en el contenedor (AUTO_INGEST)
+data/index/*
+!data/index/.gitkeep
+
+# No hacen falta en producción
+tests/
+requirements-dev.txt

@@ -1,13 +1,17 @@
-pydantic>=2.7
-python-dotenv>=1.0
-openai>=1.40
-google-genai>=1.0
-pypdf>=4.0
+# Dependencias de PRODUCCIÓN. Versiones probadas localmente; "~=" acepta
+# solo parches/menores compatibles para que un deploy no rompa por sorpresa.
+# Para desarrollo y tests: pip install -r requirements-dev.txt
 
-# Canales (API + panel web + webhook)
-fastapi>=0.110
-uvicorn[standard]>=0.29
-httpx>=0.27
+# Núcleo del agente
+pydantic~=2.14
+python-dotenv~=1.2
+pypdf~=6.21
 
-# Desarrollo / tests
-pytest>=8.0
+# Proveedores de IA (se importa solo el configurado en AGENT_PROVIDER)
+google-genai~=2.34
+openai~=3.41
+
+# Servidor y canales (API + panel web + webhooks WhatsApp/Telegram)
+fastapi~=0.162
+uvicorn[standard]~=0.54
+httpx~=0.28
